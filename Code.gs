@@ -32,7 +32,7 @@ function unsnooze() {
 
 function cleanup() {
     var labels = GmailApp.getUserLabels().filter(function (label) {
-        return label.getName().match(/^Zero/);
+        return label.getName().match(/^Zero(\/|$)/);
     });
     var folders = Folders(labels);
 
