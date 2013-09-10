@@ -2,7 +2,7 @@ function doGet() {
     // Install trigger
     ScriptApp.newTrigger('unsnooze')
         .timeBased()
-        .everyMinutes(5)
+        .everyMinutes(1)
         .create();
 
     // Show success page
