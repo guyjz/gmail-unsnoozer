@@ -20,7 +20,7 @@ First you need to create a project in your google docs:
 1. Go to Google Docs.
 2. Create new spreadsheet.
 3. Go to Tools -> Script editor...
-4. Choose new "Web App"
+4. Choose new "Script as Web App"
 5. Copy code from `Code.gs` to editor window.
 6. Create new html file (File -> New -> html file), called index.
 7. Copy paste code from `index.html` to editor window.
