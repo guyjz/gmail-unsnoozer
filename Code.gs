@@ -32,7 +32,7 @@ function unsnooze() {
 
 function cleanup() {
     var labels = GmailApp.getUserLabels().filter(function (label) {
-        return label.getName().match(/^Zero(\/|$)/);
+        return label.getName().match(/^(\[Gmail\]\/)?Zero(\/|$)/);
     });
     var folders = Folders(labels);
 
@@ -71,7 +71,7 @@ var monthIndexes = {
 
 function labelTime(label) {
     var name = label.getName();
-    var match = name.match(/^Zero\/(\d+)\/(\w+)\/(\d+)\/(\d+):(\d+)$/);
+    var match = name.match(/^(?:\[Gmail\]\/)?Zero\/(\d+)\/(\w+)\/(\d+)\/(\d+):(\d+)$/);
     if (!match) return null;
 
     var year = match[1], monthName = match[2], day = match[3], hour = match[4], minute = match[5];
