@@ -45,7 +45,7 @@ function cleanup() {
         // NOTE: possible races here:
         //       1. Sublabel could be created during cleanup() invalidating folders structure
         //       2. Thread could be labeled inbetween .getThreads() and .deleteLabel() calls
-        if (!folders.hasSubs(label) && label.getThreads(0, 1).length === 0) {
+        if (!folders.hasSubs(label) && labelIsEmpty(label)) {
             GmailApp.deleteLabel(label);
             folders.remove(label);
         }
@@ -78,6 +78,11 @@ function labelTime(label) {
     var month = monthIndexes[monthName];
 
     return new Date(year, month, day, hour, minute);
+}
+
+function labelIsEmpty(label) {
+    // Non-leaf labels (with no time) should be empty
+    return !labelTime(label) || label.getThreads(0, 1).length === 0;
 }
 
 
