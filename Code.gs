@@ -13,11 +13,13 @@ function doGet() {
 function unsnooze() {
     var now = new Date();
     var labels = GmailApp.getUserLabels();
+    var changed = false;
 
     labels.forEach(function (label) {
         var time = labelTime(label);
 
         if (!time || time.valueOf() > now.valueOf()) return;
+        changed = true;
 
         var threads = label.getThreads();
         if (threads.length) {
@@ -26,7 +28,7 @@ function unsnooze() {
         }
     });
 
-    cleanup();
+    if (changed) cleanup();
 }
 
 
