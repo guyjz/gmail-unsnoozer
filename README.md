@@ -35,3 +35,13 @@ Then publish it as Web App:
     - set who can access the app appropriately
     - click Deploy
 3. Save web app link for later use
+
+
+## Publish a new web app version
+
+1. Open spreadsheet with unsnooze script.
+2. Go to Tools -> Script editor...
+3. Change code.
+4. Then publish as web app as described earlier.
+
+Script will be republished with same url.
