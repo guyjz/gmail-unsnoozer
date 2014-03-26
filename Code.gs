@@ -95,6 +95,13 @@ function snoozeByThisEvening(label) {
 
 function snoozeByNextWeek(label) {
   Logger.log('snoozeByNextWeek', 0)
+  var threads = label.getThreads();
+  var now = new Date();
+  var nextMonday = now.getDate() - now.getDay() + 8;
+  now.setDate(nextMonday);
+  var labelName = 'testing/'+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/05:00';
+  updateLabels(label, labelName, threads)
+  Logger.log(labelName, 0)
 }
 
 function handleRelativeLabels() {
