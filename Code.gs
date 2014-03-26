@@ -68,6 +68,12 @@ function snoozeByTwoHours(label) {
 
 function snoozeByTomorrow(label) {
   Logger.log('snoozeByTomorrow', 0)
+  var now = new Date();
+  var threads = label.getThreads();
+  now.setDate(now.getDate() + 1)
+  var labelName = 'testing/'+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/05:00';
+  updateLabels(label, labelName, threads)
+  Logger.log(labelName, 0)
 }
 
 function snoozeByThisEvening(label) {
