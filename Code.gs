@@ -47,6 +47,8 @@ function updateLabels(oldLabel, newLabelName, threads) {
 //                     HANDLING RELATIVE LABELS
 //===================================================================
 
+var EVENING_HOURS = 20;
+
 var relativeLabelRegexes = {
   inTwoHours:  new RegExp('^(testing)(\\/_In 2 hours)'),
   nextWeek:    new RegExp('^(testing)(\\/_Next Week)'),
@@ -78,6 +80,17 @@ function snoozeByTomorrow(label) {
 
 function snoozeByThisEvening(label) {
   Logger.log('snoozeByThisEvening', 0)
+  var now = new Date();
+  var threads = label.getThreads();
+  var labelName
+  if (now.getHours() < EVENING_HOURS) {
+    labelName = 'testing/'+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/' + EVENING_HOURS + ':00';
+  } else {
+    now.setHours(now.getHours()+1)
+    labelName = 'testing/'+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/' + now.getHours() + ':00';
+  }
+  updateLabels(label, labelName, threads)
+  Logger.log(labelName, 0)
 }
 
 function snoozeByNextWeek(label) {
