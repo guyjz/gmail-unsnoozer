@@ -10,6 +10,11 @@ function doGet() {
       .everyMinutes(1)
       .create();
 
+  ScriptApp.newTrigger('handleRelativeLabels')
+      .timeBased()
+      .everyMinutes(1)
+      .create();
+
   // Show success page
   return HtmlService.createHtmlOutputFromFile('index');
 }
@@ -30,6 +35,79 @@ var monthIndexes = {
     December: 11
 }
 
+var monthNames = Object.keys(monthIndexes);
+
+function updateLabels(oldLabel, newLabelName, threads) {
+  oldLabel.removeFromThreads(threads);
+  var newLabel = GmailApp.getUserLabelByName(newLabelName) || GmailApp.createLabel(newLabelName);
+  newLabel.addToThreads(threads);
+}
+
+//===================================================================
+//                     HANDLING RELATIVE LABELS
+//===================================================================
+
+var relativeLabelRegexes = {
+  inTwoHours:  new RegExp('^(testing)(\\/_In 2 hours)'),
+  nextWeek:    new RegExp('^(testing)(\\/_Next Week)'),
+  thisEvening: new RegExp('^(testing)(\\/_This Evening)'),
+  tomorrow:    new RegExp('^(testing)(\\/_Tomorrow)')
+}
+
+function snoozeByTwoHours(label) {
+  Logger.log('snoozeByTwoHours', 0)
+  var now = new Date();
+  var threads = label.getThreads();
+  var minutes = Math.round(now.getMinutes()/5)*5;
+  now.setMinutes(minutes)
+  now.setHours(now.getHours() + 2)
+  var labelName = 'testing/'+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/' + now.getHours() + ':' + now.getMinutes();
+  updateLabels(label, labelName, threads)
+  Logger.log(labelName, 0)
+}
+
+function snoozeByTomorrow(label) {
+  Logger.log('snoozeByTomorrow', 0)
+}
+
+function snoozeByThisEvening(label) {
+  Logger.log('snoozeByThisEvening', 0)
+}
+
+function snoozeByNextWeek(label) {
+  Logger.log('snoozeByNextWeek', 0)
+}
+
+function handleRelativeLabels() {
+  var keys = Object.keys(relativeLabelRegexes);
+  var labels = GmailApp.getUserLabels().filter(function (label) {
+        return label.getName().match(/^(testing)(\/|$)/);
+    });
+  labels.forEach(function (label){
+    name = label.getName()
+    keys.forEach(function (key){
+      var match = name.match(relativeLabelRegexes[key])
+      if (match && label.getThreads(0, 1).length > 0) {
+        switch (key) {
+          case 'inTwoHours':
+            snoozeByTwoHours(label);
+            break;
+          case 'nextWeek':
+            snoozeByNextWeek(label);
+            break;
+          case 'thisEvening':
+            snoozeByThisEvening(label);
+            break;
+          case 'tomorrow':
+            snoozeByTomorrow(label);
+            break;
+        }
+       }
+    });
+  });
+
+}
+
 //===================================================================
 //                     MOVING MAIL TO LEAFS
 //===================================================================
@@ -46,25 +124,19 @@ function branchLabelIsEmpty(label) {
   return !labelTime(label) && label.getThreads(0, 1).length === 0;
 }
 
-function updateLabels(oldLabel, newLabelName, threads) {
-  oldLabel.removeFromThreads(threads);
-  var newLabel = GmailApp.getUserLabelByName(newLabelName) || GmailApp.createLabel(newLabelName);
-  newLabel.addToThreads(threads);
-}
-
-function moveMailFromYearToLeaf(match, threads, label, monthNames) {
+function moveMailFromYearToLeaf(match, threads, label) {
   var now = new Date();
   var labelName;
   var year = match[1];
   if (parseInt(year) > parseInt(now.getYear())) {
     labelName = 'testing/'+ year +'/January/01/05:00';
   } else {
-    labelName = tomorrowLabel(now, monthNames);
+    labelName = tomorrowLabel(now);
   }
   updateLabels(label, labelName, threads)
 }
 
-function moveMailFromMonthToLeaf(match, threads, label, monthNames) {
+function moveMailFromMonthToLeaf(match, threads, label) {
   var now = new Date();
   var labelName;
   var year  = match[1];
@@ -74,12 +146,12 @@ function moveMailFromMonthToLeaf(match, threads, label, monthNames) {
   if (isNextYear || isNextMonth) {
     labelName = 'testing/'+ year +'/' + month + '/01/05:00';
   } else {
-    labelName = tomorrowLabel(now, monthNames);
+    labelName = tomorrowLabel(now);
   }
   updateLabels(label, labelName, threads)
 }
 
-function moveMailFromDayToLeaf(match, threads, label, monthNames) {
+function moveMailFromDayToLeaf(match, threads, label) {
   var now = new Date();
   var labelName;
   var year  = match[1];
@@ -95,12 +167,12 @@ function moveMailFromDayToLeaf(match, threads, label, monthNames) {
     now.setHours(now.getHours()+1)
     labelName = 'testing/'+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/'+ now.getHours() +':00';
   } else {
-    labelName = tomorrowLabel(now, monthNames);
+    labelName = tomorrowLabel(now);
   }
   updateLabels(label, labelName, threads)
 }
 
-function tomorrowLabel(now, monthNames) {
+function tomorrowLabel(now) {
   now.setDate(now.getDate()+1)
   return 'testing/'+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/05:00';
 }
@@ -108,14 +180,12 @@ function tomorrowLabel(now, monthNames) {
 //Move all emails from branch labels to leafs
 function moveMailToLeafs() {
   GmailApp.createLabel('test');
-  var monthNames = Object.keys(monthIndexes);
   var keys = Object.keys(labelRegexes);
   var labels = GmailApp.getUserLabels().filter(function (label) {
         return label.getName().match(/^(testing)(\/|$)/);
     });
   labels.forEach(function (label){
     name = label.getName()
-    Logger.log('Label = %s', name)
     if (!branchLabelIsEmpty(label)) {
       var threads = label.getThreads();
       keys.forEach(function (key){
@@ -124,13 +194,13 @@ function moveMailToLeafs() {
           switch (key) {
             case 'year':
               label.removeFromThreads(threads);
-              moveMailFromYearToLeaf(match, threads, label, monthNames)
+              moveMailFromYearToLeaf(match, threads, label)
               break;
             case 'month':
-              moveMailFromMonthToLeaf(match, threads, label, monthNames)
+              moveMailFromMonthToLeaf(match, threads, label)
               break;
             case 'day':
-              moveMailFromDayToLeaf(match, threads, label, monthNames)
+              moveMailFromDayToLeaf(match, threads, label)
               break;
           }
         }
