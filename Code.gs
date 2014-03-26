@@ -59,7 +59,7 @@ function moveMailFromYearToLeaf(match, threads, label, monthNames) {
   if (parseInt(year) > parseInt(now.getYear())) {
     labelName = 'testing/'+ year +'/January/01/05:00';
   } else {
-    labelName = tomorrowLabel(now);
+    labelName = tomorrowLabel(now, monthNames);
   }
   updateLabels(label, labelName, threads)
 }
