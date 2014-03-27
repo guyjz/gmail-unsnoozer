@@ -39,7 +39,7 @@ function updateLabels(oldLabel, newLabelName, threads) {
   newLabel.addToThreads(threads);
 }
 
-var LABEL_PREFIX = '[Gmail]/Zero/';
+var LABEL_PREFIX = 'Zero/';
 
 //===================================================================
 //                     HANDLING RELATIVE LABELS
@@ -48,10 +48,10 @@ var LABEL_PREFIX = '[Gmail]/Zero/';
 var EVENING_HOURS = 20;
 
 var relativeLabelRegexes = {
-  inTwoHours:  new RegExp('^(\\[Gmail\\]\\/)?Zero(\\/_In 2 hours)'),
-  nextWeek:    new RegExp('^(\\[Gmail\\]\\/)?Zero(\\/_Next Week)'),
-  thisEvening: new RegExp('^(\\[Gmail\\]\\/)?Zero(\\/_This Evening)'),
-  tomorrow:    new RegExp('^(\\[Gmail\\]\\/)?Zero(\\/_Tomorrow)')
+  inTwoHours:  new RegExp('^Zero(\\/_In 2 hours)'),
+  nextWeek:    new RegExp('^Zero(\\/_Next Week)'),
+  thisEvening: new RegExp('^Zero(\\/_This Evening)'),
+  tomorrow:    new RegExp('^Zero(\\/_Tomorrow)')
 }
 
 function snoozeByTwoHours(label) {
@@ -105,7 +105,7 @@ function snoozeByNextWeek(label) {
 function handleRelativeLabels() {
   var keys = Object.keys(relativeLabelRegexes);
   var labels = GmailApp.getUserLabels().filter(function (label) {
-        return label.getName().match(/^(\[Gmail\]\/)?Zero(\/|$)/);
+        return label.getName().match(/^Zero(\/|$)/);
     });
   labels.forEach(function (label){
     name = label.getName()
@@ -138,9 +138,9 @@ function handleRelativeLabels() {
 
 //Label regexes for branch labels matching
 var labelRegexes = {
-  year:  new RegExp('^(\\[Gmail\\]\\/)?Zero\\/(\\d+)$'),
-  month: new RegExp('^(\\[Gmail\\]\\/)?Zero\\/(\\d+)\\/(\\w+)$'),
-  day:   new RegExp('^(\\[Gmail\\]\\/)?Zero\\/(\\d+)\\/(\\w+)\\/(\\d+)$')
+  year:  new RegExp('^Zero\\/(\\d+)$'),
+  month: new RegExp('^Zero\\/(\\d+)\\/(\\w+)$'),
+  day:   new RegExp('^Zero\\/(\\d+)\\/(\\w+)\\/(\\d+)$')
 }
 
 function branchLabelIsEmpty(label) {
@@ -213,7 +213,7 @@ function moveMailToLeafs() {
   GmailApp.createLabel('test');
   var keys = Object.keys(labelRegexes);
   var labels = GmailApp.getUserLabels().filter(function (label) {
-        return label.getName().match(/^(\[Gmail\]\/)?Zero(\/|$)/);
+        return label.getName().match(/^Zero(\/|$)/);
     });
   labels.forEach(function (label){
     name = label.getName()
@@ -269,7 +269,7 @@ function unsnooze() {
 
 function cleanup() {
     var labels = GmailApp.getUserLabels().filter(function (label) {
-        return label.getName().match(/^(\[Gmail\]\/)?Zero(\/|$)/);
+        return label.getName().match(/^Zero(\/|$)/);
     });
     var folders = Folders(labels);
 
@@ -291,7 +291,7 @@ function cleanup() {
 
 function labelTime(label) {
     var name = label.getName();
-    var match = name.match(/^(?:\[Gmail\]\/)?Zero\/(\d+)\/(\w+)\/(\d+)\/(\d+):(\d+)$/);
+    var match = name.match(/^Zero\/(\d+)\/(\w+)\/(\d+)\/(\d+):(\d+)$/);
     if (!match) return null;
 
     var year = match[1], monthName = match[2], day = match[3], hour = match[4], minute = match[5];
