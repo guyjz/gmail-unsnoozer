@@ -41,18 +41,18 @@ function updateLabels(oldLabel, newLabelName, threads) {
 
 var LABEL_PREFIX = 'Zero/';
 
-//===================================================================
-//                     HANDLING RELATIVE LABELS
-//===================================================================
-
-var EVENING_HOURS = 20;
-
 var relativeLabelRegexes = {
   inTwoHours:  new RegExp('^Zero(\\/_In 2 hours)'),
   nextWeek:    new RegExp('^Zero(\\/_Next Week)'),
   thisEvening: new RegExp('^Zero(\\/_This Evening)'),
   tomorrow:    new RegExp('^Zero(\\/_Tomorrow)')
 }
+
+//===================================================================
+//                     HANDLING RELATIVE LABELS
+//===================================================================
+
+var EVENING_HOURS = 20;
 
 function snoozeByTwoHours(label) {
   Logger.log('snoozeByTwoHours', 0)
@@ -279,14 +279,25 @@ function cleanup() {
     })
 
     labels.forEach(function (label) {
-        // NOTE: possible races here:
-        //       1. Sublabel could be created during cleanup() invalidating folders structure
-        //       2. Thread could be labeled inbetween .getThreads() and .deleteLabel() calls
-        if (!folders.hasSubs(label) && labelIsEmpty(label)) {
-            GmailApp.deleteLabel(label);
-            folders.remove(label);
-        }
+      // NOTE: possible races here:
+      //       1. Sublabel could be created during cleanup() invalidating folders structure
+      //       2. Thread could be labeled inbetween .getThreads() and .deleteLabel() calls
+
+      if (!folders.hasSubs(label) && labelIsEmpty(label) && !isRelativeLabel(label)) {
+          GmailApp.deleteLabel(label);
+          folders.remove(label);
+      }
     });
+}
+
+function isRelativeLabel(label) {
+  var keys = Object.keys(relativeLabelRegexes);
+  keys.forEach(function (key){
+    if(label.getName().match(relativeLabelRegexes[key])) {
+      return true;
+    }
+  });
+  return false;
 }
 
 function labelTime(label) {
