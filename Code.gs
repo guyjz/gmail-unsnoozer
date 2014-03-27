@@ -268,6 +268,7 @@ function unsnooze() {
 
 
 function cleanup() {
+  Logger.log('Cleanup',0)
     var labels = GmailApp.getUserLabels().filter(function (label) {
         return label.getName().match(/^Zero(\/|$)/);
     });
@@ -279,6 +280,7 @@ function cleanup() {
     })
 
     labels.forEach(function (label) {
+      Logger.log('Cleanup',0)
       // NOTE: possible races here:
       //       1. Sublabel could be created during cleanup() invalidating folders structure
       //       2. Thread could be labeled inbetween .getThreads() and .deleteLabel() calls
@@ -291,13 +293,18 @@ function cleanup() {
 }
 
 function isRelativeLabel(label) {
+  var returnBool = false;
+  if (label.getName() == 'Zero') {
+    returnBool = true;
+  }
   var keys = Object.keys(relativeLabelRegexes);
   keys.forEach(function (key){
     if(label.getName().match(relativeLabelRegexes[key])) {
-      return true;
+      Logger.log('isRelative %s', label.getName())
+      returnBool = true;
     }
   });
-  return false;
+  return returnBool;
 }
 
 function labelTime(label) {
