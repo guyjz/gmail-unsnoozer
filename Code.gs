@@ -1,6 +1,7 @@
 function doGet() {
 
   // Create labels necessary for "handleRelativeLabels" script
+  GmailApp.createLabel("Zero");
   createRelativeLabels()
 
   // Install trigger
@@ -58,13 +59,14 @@ var relativeLabelRegexes = {
 
 var EVENING_HOURS = 20;
 
-var IN_TWO_HOURS = 'inTwoHours'
-var NEXT_WEEK = 'nextWeek'
-var THIS_EVENING = 'thisEvening'
-var TOMORROW = 'tomorrow'
+var IN_TWO_HOURS = 'Zero/_In 2 hours'
+var NEXT_WEEK = 'Zero/_Next Week'
+var THIS_EVENING = 'Zero/_This Evening'
+var TOMORROW = 'Zero/_Tomorrow'
 
-function snoozeByTwoHours(label) {
+function snoozeByTwoHours() {
   Logger.log('snoozeByTwoHours', 0)
+  var label = GmailApp.getUserLabelByName(IN_TWO_HOURS);
   var now = new Date();
   var threads = label.getThreads();
   var minutes = Math.round(now.getMinutes()/5)*5;
@@ -75,8 +77,9 @@ function snoozeByTwoHours(label) {
   Logger.log(labelName, 0)
 }
 
-function snoozeByTomorrow(label) {
+function snoozeByTomorrow() {
   Logger.log('snoozeByTomorrow', 0)
+  var label = GmailApp.getUserLabelByName(TOMORROW);
   var now = new Date();
   var threads = label.getThreads();
   now.setDate(now.getDate() + 1)
@@ -85,8 +88,9 @@ function snoozeByTomorrow(label) {
   Logger.log(labelName, 0)
 }
 
-function snoozeByThisEvening(label) {
+function snoozeByThisEvening() {
   Logger.log('snoozeByThisEvening', 0)
+  var label = GmailApp.getUserLabelByName(THIS_EVENING);
   var now = new Date();
   var threads = label.getThreads();
   var labelName
@@ -100,8 +104,9 @@ function snoozeByThisEvening(label) {
   Logger.log(labelName, 0)
 }
 
-function snoozeByNextWeek(label) {
+function snoozeByNextWeek() {
   Logger.log('snoozeByNextWeek', 0)
+  var label = GmailApp.getUserLabelByName(NEXT_WEEK);
   var threads = label.getThreads();
   var now = new Date();
   var nextMonday = now.getDate() - now.getDay() + 8;
@@ -112,33 +117,10 @@ function snoozeByNextWeek(label) {
 }
 
 function handleRelativeLabels() {
-  createRelativeLabels()
-  var keys = Object.keys(relativeLabelRegexes);
-  var labels = GmailApp.getUserLabels().filter(function (label) {
-        return label.getName().match(/^Zero(\/|$)/);
-    });
-  labels.forEach(function (label){
-    name = label.getName()
-    keys.forEach(function (key){
-      var match = name.match(relativeLabelRegexes[key])
-      if (match && label.getThreads(0, 1).length > 0) {
-        switch (key) {
-          case IN_TWO_HOURS:
-            snoozeByTwoHours(label);
-            break;
-          case NEXT_WEEK:
-            snoozeByNextWeek(label);
-            break;
-          case THIS_EVENING:
-            snoozeByThisEvening(label);
-            break;
-          case TOMORROW:
-            snoozeByTomorrow(label);
-            break;
-        }
-       }
-    });
-  });
+  snoozeByTwoHours();
+  snoozeByNextWeek();
+  snoozeByThisEvening();
+  snoozeByTomorrow();
 }
 
 function createRelativeLabels() {
