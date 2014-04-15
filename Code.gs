@@ -1,5 +1,8 @@
 function doGet() {
 
+  // Create labels necessary for "handleRelativeLabels" script
+  createRelativeLabels()
+
   // Install trigger
   ScriptApp.newTrigger('everyMinute')
     .timeBased()
@@ -55,6 +58,11 @@ var relativeLabelRegexes = {
 
 var EVENING_HOURS = 20;
 
+var IN_TWO_HOURS = 'inTwoHours'
+var NEXT_WEEK = 'nextWeek'
+var THIS_EVENING = 'thisEvening'
+var TOMORROW = 'tomorrow'
+
 function snoozeByTwoHours(label) {
   Logger.log('snoozeByTwoHours', 0)
   var now = new Date();
@@ -104,6 +112,7 @@ function snoozeByNextWeek(label) {
 }
 
 function handleRelativeLabels() {
+  createRelativeLabels()
   var keys = Object.keys(relativeLabelRegexes);
   var labels = GmailApp.getUserLabels().filter(function (label) {
         return label.getName().match(/^Zero(\/|$)/);
@@ -114,23 +123,29 @@ function handleRelativeLabels() {
       var match = name.match(relativeLabelRegexes[key])
       if (match && label.getThreads(0, 1).length > 0) {
         switch (key) {
-          case 'inTwoHours':
+          case IN_TWO_HOURS:
             snoozeByTwoHours(label);
             break;
-          case 'nextWeek':
+          case NEXT_WEEK:
             snoozeByNextWeek(label);
             break;
-          case 'thisEvening':
+          case THIS_EVENING:
             snoozeByThisEvening(label);
             break;
-          case 'tomorrow':
+          case TOMORROW:
             snoozeByTomorrow(label);
             break;
         }
        }
     });
   });
+}
 
+function createRelativeLabels() {
+  GmailApp.createLabel(IN_TWO_HOURS);
+  GmailApp.createLabel(NEXT_WEEK);
+  GmailApp.createLabel(THIS_EVENING);
+  GmailApp.createLabel(TOMORROW);
 }
 
 //===================================================================
