@@ -1,10 +1,18 @@
 function doGet() {
+  // Creates spreadsheet for logging
+  log =
+  SpreadsheetApp.create('Unsnoozer_log');
 
   // Create labels necessary for "handleRelativeLabels" script
   GmailApp.createLabel("Zero");
-  createRelativeLabels()
+  createRelativeLabels();
 
   // Install trigger
+  // Remove previous trigger if we reinstall app
+  var triggers = ScriptApp.getProjectTriggers();
+  for(var i in triggers) {
+    ScriptApp.deleteTrigger(triggers[i]);
+  }
   ScriptApp.newTrigger('everyMinute')
     .timeBased()
     .everyMinutes(1)
@@ -12,6 +20,10 @@ function doGet() {
 
   // Show success page
   return HtmlService.createHtmlOutputFromFile('index');
+}
+
+function test() {
+  SpreadsheetApp.create('Unsnoozer_log');
 }
 
 function everyMinute() {
