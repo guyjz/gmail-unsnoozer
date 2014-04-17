@@ -38,10 +38,9 @@ function log(data) {
 }
 
 function everyMinute() {
-  unsnooze();
   moveMailToLeafs();
   handleRelativeLabels();
-  test();
+  unsnooze();
 }
 
 // Extracts time from label name
@@ -63,8 +62,8 @@ var monthIndexes = {
 var monthNames = Object.keys(monthIndexes);
 
 function updateLabels(oldLabel, newLabelName, threads) {
-  log("NEW LABEL")
-  log(newLabelName)
+  log("    NEW LABEL")
+  log("    " + newLabelName)
   oldLabel.removeFromThreads(threads);
   var newLabel = GmailApp.getUserLabelByName(newLabelName) || GmailApp.createLabel(newLabelName);
   newLabel.addToThreads(threads);
@@ -92,7 +91,7 @@ var TOMORROW = 'Zero/_Tomorrow'
 
 function snoozeByTwoHours() {
   Logger.log('snoozeByTwoHours', 0)
-  log('snoozeByTwoHours')
+  log('  snoozeByTwoHours')
   var label = GmailApp.getUserLabelByName(IN_TWO_HOURS);
   var now = new Date();
   var threads = label.getThreads();
@@ -101,14 +100,14 @@ function snoozeByTwoHours() {
   var minutes = Math.round(now.getMinutes()/5)*5;
   now.setMinutes(minutes)
   now.setHours(now.getHours() + 2)
-  var labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/' + now.getHours() + ':' + now.getMinutes();
+  var labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/' + ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
   updateLabels(label, labelName, threads)
   Logger.log(labelName, 0)
 }
 
 function snoozeByTomorrow() {
   Logger.log('snoozeByTomorrow', 0)
-  log('snoozeByTomorrow')
+  log('  snoozeByTomorrow')
   var label = GmailApp.getUserLabelByName(TOMORROW);
   var now = new Date();
   var threads = label.getThreads();
@@ -122,7 +121,7 @@ function snoozeByTomorrow() {
 
 function snoozeByThisEvening() {
   Logger.log('snoozeByThisEvening', 0)
-  log('snoozeByThisEvening')
+  log('  snoozeByThisEvening')
   var label = GmailApp.getUserLabelByName(THIS_EVENING);
   var now = new Date();
   var threads = label.getThreads();
@@ -130,10 +129,10 @@ function snoozeByThisEvening() {
   if (threads.length == 0) { return; }
   var labelName
   if (now.getHours() < EVENING_HOURS) {
-    labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/' + EVENING_HOURS + ':00';
+    labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/' + ('0' + EVENING_HOURS).slice(-2) + ':00';
   } else {
     now.setHours(now.getHours()+1)
-    labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/' + now.getHours() + ':00';
+    labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/' + ('0' + now.getHours()).slice(-2) + ':00';
   }
   updateLabels(label, labelName, threads)
   Logger.log(labelName, 0)
@@ -141,7 +140,7 @@ function snoozeByThisEvening() {
 
 function snoozeByNextWeek() {
   Logger.log('snoozeByNextWeek', 0)
-  log('snoozeByNextWeek')
+  log('  snoozeByNextWeek')
   var label = GmailApp.getUserLabelByName(NEXT_WEEK);
   var threads = label.getThreads();
   // We should do nothing if relative label has no threads
@@ -188,10 +187,10 @@ function branchLabelIsEmpty(label) {
 
 function moveMailFromYearToLeaf(match, threads, label) {
   Logger.log('moveMailFromYearToLeaf', 0)
-  log('moveMailFromMonthToLeaf')
+  log('  moveMailFromMonthToLeaf')
   var now = new Date();
   var labelName;
-  var year = match[2];
+  var year = match[1];
   Logger.log('Year = %s', year)
   if (parseInt(year) > parseInt(now.getYear())) {
     labelName = LABEL_PREFIX+ year +'/January/01/05:00';
@@ -203,11 +202,11 @@ function moveMailFromYearToLeaf(match, threads, label) {
 
 function moveMailFromMonthToLeaf(match, threads, label) {
   Logger.log('moveMailFromMonthToLeaf', 0)
-  log('moveMailFromMonthToLeaf')
+  log('  moveMailFromMonthToLeaf')
   var now = new Date();
   var labelName;
-  var year  = match[2];
-  var month = match[3];
+  var year  = match[1];
+  var month = match[2];
   var isNextYear  = parseInt(year) > parseInt(now.getYear());
   var isNextMonth = monthIndexes[month] > parseInt(now.getMonth());
   if (isNextYear || isNextMonth) {
@@ -220,21 +219,24 @@ function moveMailFromMonthToLeaf(match, threads, label) {
 
 function moveMailFromDayToLeaf(match, threads, label) {
   Logger.log('moveMailFromDayToLeaf', 0)
-  log('moveMailFromDayToLeaf')
+  log('  moveMailFromDayToLeaf')
   var now = new Date();
   var labelName;
-  var year  = match[2];
-  var month = match[3];
-  var day   = match[4];
+  var year  = match[1];
+  var month = match[2];
+  var day   = match[3];
   var isNextYear   = parseInt(year) > parseInt(now.getYear());
   var isNextMonth  = monthIndexes[month] > parseInt(now.getMonth());
   var isNextDay    = parseInt(day) > parseInt(now.getDate());
   var isCurrentDay = parseInt(day) == parseInt(now.getDate());
+  log("DAY " + day + "   date DAY " + now.getDate())
   if (isNextYear || isNextMonth || isNextDay) {
+    log("    NEXT YEAR MONTH OR DAY");
     labelName = LABEL_PREFIX+ year +'/' + month + '/'+ day +'/05:00';
   } else if (isCurrentDay) {
+    log("    CURRENT DAY");
     now.setHours(now.getHours()+1)
-    labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/'+ now.getHours() +':00';
+    labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/'+ ('0' + now.getHours()).slice(-2) +':00';
   } else {
     labelName = tomorrowLabel(now);
   }
@@ -285,6 +287,7 @@ function moveMailToLeafs() {
 //===================================================================
 
 function unsnooze() {
+  log('Unsnooze')
     var now = new Date();
     var labels = GmailApp.getUserLabels();
     var changed = false;
@@ -308,6 +311,7 @@ function unsnooze() {
 
 function cleanup() {
   Logger.log('Cleanup',0)
+  log("  CLEANUP")
     var labels = GmailApp.getUserLabels().filter(function (label) {
         return label.getName().match(/^Zero(\/|$)/);
     });
