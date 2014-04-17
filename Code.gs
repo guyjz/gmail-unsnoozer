@@ -329,6 +329,7 @@ function cleanup() {
       //       2. Thread could be labeled inbetween .getThreads() and .deleteLabel() calls
 
       if (!folders.hasSubs(label) && labelIsEmpty(label) && !isRelativeLabel(label)) {
+          log("REMOVE LABEL " + label.getName())
           GmailApp.deleteLabel(label);
           folders.remove(label);
       }
