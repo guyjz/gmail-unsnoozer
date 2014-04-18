@@ -10,7 +10,7 @@ Automatically unsnoozes gmail threads snoozed by Inbox Zero app.
 
 (the link above is accessible only for @mindojo.com users for now)
 
-[script]: https://script.google.com/a/macros/mindojo.com/s/AKfycbzSRaTA1xA5TlxbHgbrdt8aGLNxvUGON9Uwz-0UjlIquuA77m3o/exec
+[script]: https://script.google.com/macros/s/AKfycbxweRx_XufZ6PhxzR59LSYKe8IhJK4NYqyLNIlhJUCLz978WNBO/exec
 
 
 ## Recreation from source code
