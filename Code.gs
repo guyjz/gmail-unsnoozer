@@ -37,6 +37,7 @@ function log(data) {
   if (!(data instanceof Array)) {
     data = [data]
   }
+  data.push(new Date)
   sheet.appendRow(data);
   Logger.log(data);
 }
@@ -66,9 +67,9 @@ var monthIndexes = {
 var monthNames = Object.keys(monthIndexes);
 
 function updateLabels(oldLabel, newLabelName, threads) {
-  log(["updateLabels: remove old label ", oldLabel.getName()])
+  log(["updateLabels", "remove from label", oldLabel.getName()])
   oldLabel.removeFromThreads(threads);
-  log(["updateLabels: remove old label " ,oldLabel.getName()])
+  log(["updateLabels", "move to", newLabelName])
   var newLabel = GmailApp.getUserLabelByName(newLabelName) || GmailApp.createLabel(newLabelName);
   newLabel.addToThreads(threads);
 }
@@ -104,7 +105,6 @@ function snoozeByTwoHours() {
   now.setHours(now.getHours() + 2)
   var labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/' + ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
   updateLabels(label, labelName, threads)
-  Logger.log(labelName, 0)
 }
 
 function snoozeByTomorrow() {
@@ -116,7 +116,6 @@ function snoozeByTomorrow() {
   now.setDate(now.getDate() + 1)
   var labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/05:00';
   updateLabels(label, labelName, threads)
-  Logger.log(labelName, 0)
 }
 
 function snoozeByThisEvening() {
@@ -133,7 +132,6 @@ function snoozeByThisEvening() {
     labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/' + ('0' + now.getHours()).slice(-2) + ':00';
   }
   updateLabels(label, labelName, threads)
-  Logger.log(labelName, 0)
 }
 
 function snoozeByNextWeek() {
@@ -146,7 +144,6 @@ function snoozeByNextWeek() {
   now.setDate(nextMonday);
   var labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/05:00';
   updateLabels(label, labelName, threads)
-  Logger.log(labelName, 0)
 }
 
 function handleRelativeLabels() {
@@ -183,7 +180,6 @@ function moveMailFromYearToLeaf(match, threads, label) {
   var now = new Date();
   var labelName;
   var year = match[1];
-  Logger.log('Year = %s', year)
   if (parseInt(year) > parseInt(now.getYear())) {
     labelName = LABEL_PREFIX+ year +'/January/01/05:00';
   } else {
@@ -225,7 +221,6 @@ function moveMailFromDayToLeaf(match, threads, label) {
   } else {
     labelName = tomorrowLabel(now);
   }
-  Logger.log(labelName, 0)
   updateLabels(label, labelName, threads)
 }
 
@@ -242,7 +237,6 @@ function moveMailToLeafs() {
     });
   labels.forEach(function (label){
     name = label.getName()
-    Logger.log(name, 0)
     if (!branchLabelIsEmpty(label)) {
       var threads = label.getThreads();
       keys.forEach(function (key){
@@ -270,8 +264,9 @@ function moveMailToLeafs() {
 //                           UNSNOOZER
 //===================================================================
 
+
+// Goes through labels and checks if they are 'leaf' and overdue
 function unsnooze() {
-  log('Unsnooze')
     var now = new Date();
     var labels = GmailApp.getUserLabels();
     var changed = false;
@@ -284,13 +279,16 @@ function unsnooze() {
         changed = true;
         var threads = label.getThreads();
         if (threads.length) {
-          log(['unsnooze: move threads from', label.getName()])
+          log(["unsnooze", "move threads from labels", label.getName()])
           GmailApp.moveThreadsToInbox(threads);
           label.removeFromThreads(threads);
         }
       }
     });
   // If any label was overdue - cleanup all labels
+
+  // :TODO probably we should call it every minute
+  // so it doesn't depend on existance of overdue labels
   if (changed) cleanup();
 }
 
@@ -310,11 +308,10 @@ function cleanup() {
     // NOTE: possible races here:
     //       1. Sublabel could be created during cleanup() invalidating folders structure
     //       2. Thread could be labeled inbetween .getThreads() and .deleteLabel() calls
-    log(['cleanup: label has subs ', folders.hasSubs(label), label.getName()])
     if (!folders.hasSubs(label) && labelIsEmpty(label) && !isRelativeLabel(label)) {
-      log(["cleanup: delete label ", label.getName()])
-      //GmailApp.deleteLabel(label);
-      //folders.remove(label);
+      log(["cleanup", "delete label", label.getName()])
+      GmailApp.deleteLabel(label);
+      folders.remove(label);
     }
   });
 }
@@ -351,12 +348,10 @@ function labelIsEmpty(label) {
 
 // Subfolder accounting mechanism
 function Folders(labels) {
-  log('Folders');
     var folders = {};
     var self = {
         add: function (label) {
             var name = label.getName();
-          log(["Add: ", name])
             var m = name.match(/^(.+)\/?([^\/]+)?/);
             if (m) {
                 folders[m[1]] = folders[m[1]] || [];
@@ -365,7 +360,7 @@ function Folders(labels) {
         },
         remove: function (label) {
             var name = label.getName();
-            var m = name.match(/^(.+)\/([^\/]+)/);
+            var m = name.match(/^(.+)\/?([^\/]+)?/);
             if (m) {
                 delete folders[m[1]][name];
                 if (Object.keys(folders[m[1]]).length === 0) {
@@ -384,8 +379,5 @@ function Folders(labels) {
     };
 
     labels.forEach(self.add);
-  for(var folderName in folders) {
-    log([folderName,folders[folderName]])
-  }
     return self;
 }
