@@ -303,21 +303,20 @@ function cleanup() {
 
   // Sort labels by name length descending to process leaves earlier
   labels.sort(function (a, b) {
-      return b.getName().splice('/').length - a.getName().splice('/').length;
+      return b.getName().slice('/').length - a.getName().slice('/').length;
   })
 
-    //labels.forEach(function (label) {
-    //  Logger.log('Cleanup',0)
-      // NOTE: possible races here:
-      //       1. Sublabel could be created during cleanup() invalidating folders structure
-      //       2. Thread could be labeled inbetween .getThreads() and .deleteLabel() calls
-
-    //  if (!folders.hasSubs(label) && labelIsEmpty(label) && !isRelativeLabel(label)) {
-    //      log("    REMOVE LABEL " + label.getName())
-    //      GmailApp.deleteLabel(label);
-    //      folders.remove(label);
-    //  }
-    //});
+  labels.forEach(function (label) {
+    // NOTE: possible races here:
+    //       1. Sublabel could be created during cleanup() invalidating folders structure
+    //       2. Thread could be labeled inbetween .getThreads() and .deleteLabel() calls
+    log(['cleanup: label has subs ', folders.hasSubs(label), label.getName()])
+    if (!folders.hasSubs(label) && labelIsEmpty(label) && !isRelativeLabel(label)) {
+      log(["cleanup: delete label ", label.getName()])
+      //GmailApp.deleteLabel(label);
+      //folders.remove(label);
+    }
+  });
 }
 
 function isRelativeLabel(label) {
@@ -346,18 +345,19 @@ function labelTime(label) {
 }
 
 function labelIsEmpty(label) {
-    // Non-leaf labels (with no time) should be empty
-    return !labelTime(label) || label.getThreads(0, 1).length === 0;
+    return label.getThreads(0, 1).length === 0;
 }
 
 
 // Subfolder accounting mechanism
 function Folders(labels) {
+  log('Folders');
     var folders = {};
     var self = {
         add: function (label) {
             var name = label.getName();
-            var m = name.match(/^(.+)\/([^\/]+)/);
+          log(["Add: ", name])
+            var m = name.match(/^(.+)\/?([^\/]+)?/);
             if (m) {
                 folders[m[1]] = folders[m[1]] || [];
                 folders[m[1]][name] = true;
@@ -374,10 +374,18 @@ function Folders(labels) {
             }
         },
         hasSubs: function (label) {
-            return label.getName() in folders;
+          for(var folderName in folders) {
+            if ((folderName.indexOf(label.getName()) != -1) && folderName != label.getName()){
+              return true;
+            }
+          }
+          return false;
         }
     };
 
     labels.forEach(self.add);
+  for(var folderName in folders) {
+    log([folderName,folders[folderName]])
+  }
     return self;
 }
