@@ -6,13 +6,24 @@ function doGet() {
   GmailApp.createLabel("Zero");
   createRelativeLabels();
 
-  // Remove previous trigger if we reinstall app
+  // Remove previous triggers if we reinstall app
   var triggers = ScriptApp.getProjectTriggers();
   for(var i in triggers) {
     ScriptApp.deleteTrigger(triggers[i]);
   }
+
   // Install trigger
-  ScriptApp.newTrigger('everyMinute')
+  ScriptApp.newTrigger('moveMailToLeafs')
+    .timeBased()
+    .everyMinutes(1)
+    .create();
+
+  ScriptApp.newTrigger('handleRelativeLabels')
+    .timeBased()
+    .everyMinutes(1)
+    .create();
+
+  ScriptApp.newTrigger('unsnooze')
     .timeBased()
     .everyMinutes(1)
     .create();
@@ -20,6 +31,12 @@ function doGet() {
   // Show success page
   return HtmlService.createHtmlOutputFromFile('index');
 }
+
+// function everyMinute() {
+//   moveMailToLeafs();
+//   handleRelativeLabels();
+//   unsnooze();
+// }
 
 function save_log() {
   var now = new Date();
@@ -40,12 +57,6 @@ function log(data) {
   data.push(new Date)
   sheet.appendRow(data);
   Logger.log(data);
-}
-
-function everyMinute() {
-  moveMailToLeafs();
-  handleRelativeLabels();
-  unsnooze();
 }
 
 // Extracts time from label name
