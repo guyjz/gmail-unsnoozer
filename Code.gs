@@ -1,6 +1,6 @@
 function doGet() {
   // Creates spreadsheet for logging
-  //save_log()
+  save_log()
 
   // Create labels necessary for "handleRelativeLabels" script
   GmailApp.createLabel("Zero");
@@ -21,24 +21,24 @@ function doGet() {
   return HtmlService.createHtmlOutputFromFile('index');
 }
 
-// function save_log() {
-//   var now = new Date();
-//   var log_file = SpreadsheetApp.create('Unsnoozer Log ' + now);
-//   var scriptProperties = PropertiesService.getScriptProperties();
-//   scriptProperties.setProperty('LOG_FILE', log_file.getId());
-// }
+function save_log() {
+  var now = new Date();
+  var log_file = SpreadsheetApp.create('Unsnoozer Log ' + now);
+  var userProperties = PropertiesService.getUserProperties();
+  userProperties.setProperty('LOG_FILE', log_file.getId());
+}
 
 function log(data) {
-  // var now = new Date();
-  // var scriptProperties = PropertiesService.getScriptProperties();
-  // var log_id = scriptProperties.getProperty('LOG_FILE');
-  // var log = SpreadsheetApp.openById(log_id);
-  // var sheet = log.getSheets()[0];
-  // if (!(data instanceof Array)) {
-  //   data = [data]
-  // }
-  // data.push(new Date)
-  // sheet.appendRow(data);
+  var now = new Date();
+  var userProperties = PropertiesService.getuserProperties();
+  var log_id = userProperties.getProperty('LOG_FILE');
+  var log = SpreadsheetApp.openById(log_id);
+  var sheet = log.getSheets()[0];
+  if (!(data instanceof Array)) {
+    data = [data]
+  }
+  data.push(new Date)
+  sheet.appendRow(data);
   Logger.log(data);
 }
 
