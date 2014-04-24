@@ -5,7 +5,7 @@ function bazz() {
 var fooNamespace = {
     bar: function() {
         Logger.log('Bar!')
-    }
+    },
 
     funcWithIntendedError: function() {
         intendedError();
