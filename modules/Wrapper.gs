@@ -1,10 +1,10 @@
 function tryCatchWrapper(f) {
     return function() {
-        try {
+        //try {
             f.apply(this, arguments);
-        } catch(error) {
+        //} catch(error) {
             sendErrorToAdminMail(error)
-        }
+        //}
     }
 }
 
