@@ -9,4 +9,4 @@ function tryCatchWrapper(f) {
     }
 }
 
-sendErrorToAdminMail("error")
+sendErrorToAdminMail("sent from wrapper")
