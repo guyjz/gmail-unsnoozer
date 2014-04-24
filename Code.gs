@@ -3,8 +3,7 @@ function doGet() {
   save_log()
 
   // Create labels necessary for "handleRelativeLabels" script
-  GmailApp.createLabel("Zero");
-  createRelativeLabels();
+  prepareForRunning();
 
   // Remove previous trigger if we reinstall app
   var triggers = ScriptApp.getProjectTriggers();
@@ -21,6 +20,11 @@ function doGet() {
   return HtmlService.createHtmlOutputFromFile('index');
 }
 
+function prepareForRunning() {
+  GmailApp.createLabel("Zero");
+  createRelativeLabels();
+}
+
 function save_log() {
   var now = new Date();
   var log_file = SpreadsheetApp.create('Unsnoozer Log ' + now);
@@ -28,12 +32,25 @@ function save_log() {
   userProperties.setProperty('LOG_FILE', log_file.getId());
 }
 
+function sendErrorToAdmin(error) {
+  MailApp.sendEmail('maksim@mindojo.com', "Unsnoozer error", error);
+}
+
 function log(data) {
   var now = new Date();
-  var userProperties = PropertiesService.getuserProperties();
+  var userProperties = PropertiesService.getUserProperties();
   var log_id = userProperties.getProperty('LOG_FILE');
-  var log = SpreadsheetApp.openById(log_id);
-  var sheet = log.getSheets()[0];
+  var log_file;
+  try {
+    log_file = SpreadsheetApp.openById(log_id);
+  } catch(error) {
+    sendErrorToAdmin(error);
+    Logger.log(error)
+    save_log();
+    log(data);
+    return;
+  }
+  var sheet = log_file.getSheets()[0];
   if (!(data instanceof Array)) {
     data = [data]
   }
@@ -43,6 +60,7 @@ function log(data) {
 }
 
 function everyMinute() {
+  prepareForRunning();
   moveMailToLeafs();
   handleRelativeLabels();
   unsnooze();
@@ -66,9 +84,16 @@ var monthIndexes = {
 
 var monthNames = Object.keys(monthIndexes);
 
+function removeThreadsFromLabel(label, threads) {
+  threads.forEach(function (thread){
+    log(["Remove thread " + thread.getFirstMessageSubject(), "from label " + label.getName()])
+  });
+  label.removeFromThreads(threads);
+}
+
 function updateLabels(oldLabel, newLabelName, threads) {
-  log(["updateLabels", "remove from label", oldLabel.getName()])
-  oldLabel.removeFromThreads(threads);
+  log(["updateLabels", "remove from label",  oldLabel.getName()])
+  removeThreadsFromLabel(oldLabel, threads);
   log(["updateLabels", "move to", newLabelName])
   var newLabel = GmailApp.getUserLabelByName(newLabelName) || GmailApp.createLabel(newLabelName);
   newLabel.addToThreads(threads);
@@ -244,7 +269,6 @@ function moveMailToLeafs() {
         if (match) {
           switch (key) {
             case 'year':
-              label.removeFromThreads(threads);
               moveMailFromYearToLeaf(match, threads, label)
               break;
             case 'month':
@@ -281,7 +305,7 @@ function unsnooze() {
         if (threads.length) {
           log(["unsnooze", "move threads from labels", label.getName()])
           GmailApp.moveThreadsToInbox(threads);
-          label.removeFromThreads(threads);
+          removeThreadsFromLabel(label, threads);
         }
       }
     });
