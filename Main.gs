@@ -13,17 +13,7 @@ function doGet() {
   }
 
   // Install trigger
-  ScriptApp.newTrigger('moveMailToLeafs')
-    .timeBased()
-    .everyMinutes(1)
-    .create();
-
-  ScriptApp.newTrigger('handleRelativeLabels')
-    .timeBased()
-    .everyMinutes(1)
-    .create();
-
-  ScriptApp.newTrigger('unsnooze')
+  ScriptApp.newTrigger('everyMinute')
     .timeBased()
     .everyMinutes(1)
     .create();
@@ -32,11 +22,11 @@ function doGet() {
   return HtmlService.createHtmlOutputFromFile('index');
 }
 
-// function everyMinute() {
-//   moveMailToLeafs();
-//   handleRelativeLabels();
-//   unsnooze();
-// }
+ function everyMinute() {
+   moveMailToLeafs();
+   relativeLabels.handleRelativeLabels();
+   unsnooze();
+ }
 
 function save_log() {
   var now = new Date();
@@ -86,90 +76,6 @@ function updateLabels(oldLabel, newLabelName, threads) {
 }
 
 var LABEL_PREFIX = 'Zero/';
-
-var relativeLabelRegexes = {
-  inTwoHours:  new RegExp('^Zero(\\/_In 2 hours)'),
-  nextWeek:    new RegExp('^Zero(\\/_Next Week)'),
-  thisEvening: new RegExp('^Zero(\\/_This Evening)'),
-  tomorrow:    new RegExp('^Zero(\\/_Tomorrow)')
-}
-
-//===================================================================
-//                     HANDLING RELATIVE LABELS
-//===================================================================
-
-var EVENING_HOURS = 20;
-
-var IN_TWO_HOURS = 'Zero/_In 2 hours'
-var NEXT_WEEK = 'Zero/_Next Week'
-var THIS_EVENING = 'Zero/_This Evening'
-var TOMORROW = 'Zero/_Tomorrow'
-
-function snoozeByTwoHours() {
-  var label = GmailApp.getUserLabelByName(IN_TWO_HOURS);
-  var now = new Date();
-  var threads = label.getThreads();
-  // We should do nothing if relative label has no threads
-  if (threads.length == 0) { return; }
-  var minutes = Math.round(now.getMinutes()/5)*5;
-  now.setMinutes(minutes)
-  now.setHours(now.getHours() + 2)
-  var labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/' + ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
-  updateLabels(label, labelName, threads)
-}
-
-function snoozeByTomorrow() {
-  var label = GmailApp.getUserLabelByName(TOMORROW);
-  var now = new Date();
-  var threads = label.getThreads();
-  // We should do nothing if relative label has no threads
-  if (threads.length == 0) { return; }
-  now.setDate(now.getDate() + 1)
-  var labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/05:00';
-  updateLabels(label, labelName, threads)
-}
-
-function snoozeByThisEvening() {
-  var label = GmailApp.getUserLabelByName(THIS_EVENING);
-  var now = new Date();
-  var threads = label.getThreads();
-  // We should do nothing if relative label has no threads
-  if (threads.length == 0) { return; }
-  var labelName
-  if (now.getHours() < EVENING_HOURS) {
-    labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/' + ('0' + EVENING_HOURS).slice(-2) + ':00';
-  } else {
-    now.setHours(now.getHours()+1)
-    labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/' + ('0' + now.getHours()).slice(-2) + ':00';
-  }
-  updateLabels(label, labelName, threads)
-}
-
-function snoozeByNextWeek() {
-  var label = GmailApp.getUserLabelByName(NEXT_WEEK);
-  var threads = label.getThreads();
-  // We should do nothing if relative label has no threads
-  if (threads.length == 0) { return; }
-  var now = new Date();
-  var nextMonday = now.getDate() - now.getDay() + 8;
-  now.setDate(nextMonday);
-  var labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/05:00';
-  updateLabels(label, labelName, threads)
-}
-
-function handleRelativeLabels() {
-  snoozeByTwoHours();
-  snoozeByNextWeek();
-  snoozeByThisEvening();
-  snoozeByTomorrow();
-}
-
-function createRelativeLabels() {
-  GmailApp.createLabel(IN_TWO_HOURS);
-  GmailApp.createLabel(NEXT_WEEK);
-  GmailApp.createLabel(THIS_EVENING);
-  GmailApp.createLabel(TOMORROW);
-}
 
 //===================================================================
 //                     MOVING MAIL TO LEAFS
@@ -325,20 +231,6 @@ function cleanup() {
       folders.remove(label);
     }
   });
-}
-
-function isRelativeLabel(label) {
-  var returnBool = false;
-  if (label.getName() == 'Zero') {
-    returnBool = true;
-  }
-  var keys = Object.keys(relativeLabelRegexes);
-  keys.forEach(function (key){
-    if(label.getName().match(relativeLabelRegexes[key])) {
-      returnBool = true;
-    }
-  });
-  return returnBool;
 }
 
 function labelTime(label) {
