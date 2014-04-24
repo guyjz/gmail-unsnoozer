@@ -12,6 +12,6 @@ var fooNamespace = {
     },
 
     funcWithIntendedError: function() {
-        intendedError();
+        HtmlService.createHtmlOutputFromFile('wrong_file');
     }
 }
