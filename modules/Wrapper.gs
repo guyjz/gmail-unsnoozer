@@ -4,7 +4,8 @@ function tryCatchWrapper(f) {
         try {
             f.apply(this, arguments);
         } catch(error) {
-            sendErrorToAdminMail("error")
+            Logger.log(error)
+            sendErrorToAdminMail(error)
         }
     }
 }
