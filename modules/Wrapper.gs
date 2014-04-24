@@ -9,5 +9,6 @@ function tryCatchWrapper(f) {
 }
 
 function sendErrorToAdminMail(error) {
-    MailApp.sendEmail("maksim@mindojo.com", "Error occured in Unsnoozer", error);
+    //MailApp.sendEmail("maksim@mindojo.com", "Error occured in Unsnoozer", error);
+    Logger.log('sendErrorToAdminMail')
 }
