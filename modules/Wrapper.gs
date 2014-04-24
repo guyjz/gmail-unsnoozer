@@ -1,9 +1,10 @@
+
 function tryCatchWrapper(f) {
-    Logger.log("Try Catch Wrapper")
-    try {
-        f();
-    } catch(error) {
-        Logger.log(error)
-        sendErrorToAdminMail(error)
+    return function() {
+        try {
+            f.apply(this, arguments);
+        } catch(error) {
+            sendErrorToAdminMail(error)
+        }
     }
 }
