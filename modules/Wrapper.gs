@@ -3,7 +3,7 @@ function tryCatchWrapper(f) {
         //try {
             f.apply(this, arguments);
         //} catch(error) {
-            sendErrorToAdminMail(error)
+            sendErrorToAdminMail("error")
         //}
     }
 }
