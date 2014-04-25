@@ -2,9 +2,6 @@ function doGet() {
   // Creates spreadsheet for logging
   save_log()
 
-  // Create labels necessary for "handleRelativeLabels" script
-  prepareForRunning();
-
   // Remove previous trigger if we reinstall app
   var triggers = ScriptApp.getProjectTriggers();
   for(var i in triggers) {
