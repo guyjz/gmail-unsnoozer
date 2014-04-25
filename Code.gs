@@ -51,7 +51,7 @@ function save_log() {
 }
 
 function sendErrorToAdmin(error) {
-  MailApp.sendEmail('maksim@mindojo.com', "Unsnoozer error", error);
+  MailApp.sendEmail(Session.getActiveUser().getEmail(), "Unsnoozer error", error);
 }
 
 function log(data) {
