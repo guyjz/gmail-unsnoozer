@@ -20,9 +20,17 @@ function doGet() {
   return HtmlService.createHtmlOutputFromFile('index');
 }
 
+function getName(item) {
+  return item.getName()
+}
+
 function prepareForRunning() {
-  GmailApp.createLabel("Zero");
-  createRelativeLabels();
+  var userLabels = GmailApp.getUserLabels();
+  var userLabelsNames = userLabels.map(getName)
+  if(userLabelsNames.indexOf('Zero') == -1){
+    GmailApp.createLabel("Zero");
+  }
+  createRelativeLabels(userLabelsNames);
 }
 
 function save_log() {
@@ -178,11 +186,18 @@ function handleRelativeLabels() {
   snoozeByTomorrow();
 }
 
-function createRelativeLabels() {
-  GmailApp.createLabel(IN_TWO_HOURS);
-  GmailApp.createLabel(NEXT_WEEK);
-  GmailApp.createLabel(THIS_EVENING);
-  GmailApp.createLabel(TOMORROW);
+function createRelativeLabels(userLabelsNames) {
+  var relativeLabelsArray = [
+    IN_TWO_HOURS,
+    NEXT_WEEK,
+    THIS_EVENING,
+    TOMORROW
+  ]
+  for(var relativeLabelId in relativeLabelsArray){
+    if(userLabelsNames.indexOf(relativeLabelsArray[relativeLabelId]) == -1){
+      GmailApp.createLabel(relativeLabelsArray[relativeLabelId]);
+    }
+  }
 }
 
 //===================================================================
