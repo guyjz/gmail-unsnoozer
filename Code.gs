@@ -149,7 +149,7 @@ function snoozeByTwoHours(userLabelsNames) {
   var minutes = Math.round(now.getMinutes()/5)*5;
   now.setMinutes(minutes)
   now.setHours(now.getHours() + 2)
-  var labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/' + ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
+  var labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ ("0" + now.getDate()).slice(-2) +'/' + ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
   updateLabels(label, labelName, threads, userLabelsNames)
 }
 
@@ -160,7 +160,7 @@ function snoozeByTomorrow(userLabelsNames) {
   // We should do nothing if relative label has no threads
   if (threads.length == 0) { return; }
   now.setDate(now.getDate() + 1)
-  var labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/05:00';
+  var labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ ("0" + now.getDate()).slice(-2) +'/05:00';
   updateLabels(label, labelName, threads, userLabelsNames)
 }
 
@@ -172,10 +172,10 @@ function snoozeByThisEvening(userLabelsNames) {
   if (threads.length == 0) { return; }
   var labelName
   if (now.getHours() < EVENING_HOURS) {
-    labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/' + ('0' + EVENING_HOURS).slice(-2) + ':00';
+    labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ ("0" + now.getDate()).slice(-2) +'/' + ('0' + EVENING_HOURS).slice(-2) + ':00';
   } else {
     now.setHours(now.getHours()+1)
-    labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/' + ('0' + now.getHours()).slice(-2) + ':00';
+    labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ ("0" + now.getDate()).slice(-2) +'/' + ('0' + now.getHours()).slice(-2) + ':00';
   }
   updateLabels(label, labelName, threads, userLabelsNames)
 }
@@ -188,7 +188,7 @@ function snoozeByNextWeek(userLabelsNames) {
   var now = new Date();
   var nextMonday = now.getDate() - now.getDay() + 8;
   now.setDate(nextMonday);
-  var labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/05:00';
+  var labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ ("0" + now.getDate()).slice(-2) +'/05:00';
   updateLabels(label, labelName, threads, userLabelsNames)
 }
 
@@ -271,7 +271,7 @@ function moveMailFromDayToLeaf(match, threads, label, userLabelsNames) {
     labelName = LABEL_PREFIX+ year +'/' + month + '/'+ day +'/05:00';
   } else if (isCurrentDay) {
     now.setHours(now.getHours()+1)
-    labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/'+ ('0' + now.getHours()).slice(-2) +':00';
+    labelName = LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ ("0" + now.getDate()).slice(-2) +'/'+ ('0' + now.getHours()).slice(-2) +':00';
   } else {
     labelName = tomorrowLabel(now);
   }
@@ -280,7 +280,7 @@ function moveMailFromDayToLeaf(match, threads, label, userLabelsNames) {
 
 function tomorrowLabel(now) {
   now.setDate(now.getDate()+1)
-  return LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ now.getDate() +'/05:00';
+  return LABEL_PREFIX+ now.getYear() +'/' + monthNames[now.getMonth()] + '/'+ ("0" + now.getDate()).slice(-2) +'/05:00';
 }
 
 //Move all emails from branch labels to leafs
