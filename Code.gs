@@ -51,7 +51,7 @@ function save_log() {
 }
 
 function sendErrorToAdmin(error) {
-  MailApp.sendEmail('maksim@mindojo.com', "Unsnoozer error", error);
+  MailApp.sendEmail(Session.getActiveUser().getEmail(), "Unsnoozer error", error);
 }
 
 function log(data) {
@@ -72,7 +72,7 @@ function log(data) {
   if (!(data instanceof Array)) {
     data = [data]
   }
-  data.push(new Date)
+  data = [new Date].concat(data);  // start each log line with the timestamp
   sheet.appendRow(data);
   Logger.log(data);
 }
